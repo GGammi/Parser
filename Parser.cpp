@@ -130,25 +130,25 @@ void printTree(Node* node, ofstream& output_file, int depth = 0) { // Метод
 
 int main(int argc, char* argv[]) {
 	setlocale(LC_ALL, "Russian");
-	//if (argc != 3) { // если не указаны имена входного и выходного файлов
-	//	cout << "Использование: " << argv[0] << " <input_filename> <output_filename>" << endl;
-	//	return 1; // завершаем работу программы с кодом ошибки
-	//}
+	if (argc != 3) { // если не указаны имена входного и выходного файлов
+		cout << "Использование: " << argv[0] << " <input_filename> <output_filename>" << endl;
+		return 1; // завершаем работу программы с кодом ошибки
+	}
 	ifstream input_file("input_file.txt"); // открываем входной файл
-	//if (!input_file.is_open()) { // если не удалось открыть файл
-	//	cout << "Не удалось открыть файл \"" << argv[1] << "\"" << endl;
-	//	return 1; // завершаем работу программы с кодом ошибки
-	//}
+	if (!input_file.is_open()) { // если не удалось открыть файл
+		cout << "Не удалось открыть файл \"" << argv[1] << "\"" << endl;
+		return 1; // завершаем работу программы с кодом ошибки
+	}
 	string line; // временная строка
 	while (getline(input_file, line)) { // читаем файл построчно
 		parse_node(line, 0); // парсим строку и создаем узел
 	}
 	input_file.close(); // закрываем входной файл
 	ofstream output_file("output_file.txt"); // создаем выходной файл
-	//if (!output_file.is_open()) { // если не удалось создать файл
-	//	cout << "Не удалось создать файл \"" << argv[2] << "\"" << endl;
-	//	return 1; // завершаем работу программы с кодом ошибки
-	//}
+	if (!output_file.is_open()) { // если не удалось создать файл
+		cout << "Не удалось создать файл \"" << argv[2] << "\"" << endl;
+		return 1; // завершаем работу программы с кодом ошибки
+	}
 	printTree(tree.findNode(1), output_file);
 	output_file.close(); // закрываем выходной файл
 	return 0; // завершаем работу программы

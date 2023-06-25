@@ -2,18 +2,20 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <regex>
+#include <locale>
 
 using namespace std;
 
-class Node {
+class Node { // класс представляет узел дерева
 public:
-	int id;
-	int parent_id;
-	string name;
-	string value;
-	std::vector<Node*> children;
+	int id; // идентификатор узла
+	int parent_id; // идентификатор родительского узла
+	string name; // название узла
+	string value; // значение узла
+	vector<Node*> children; // вектор который хранит дочерние узлы.
 
-	Node(int id, int parent_id, std::string name, string value) {
+	Node(int id, int parent_id, string name, string value) { // конструктор инициализирует свойства объекта
 		this->id = id;
 		this->parent_id = parent_id;
 		this->name = name;
@@ -21,11 +23,11 @@ public:
 	}
 };
 
-class Tree {
+class Tree { // Класс представляет дерево
 public:
-	std::vector<Node*> nodes;
+	vector<Node*> nodes; // вектор который хранит все узлы дерева
 
-	void addNode(int id, int parent_id, std::string name, string value) {
+	void addNode(int id, int parent_id, string name, string value) { // Метод создает новый узел и добавляет его в вектор `nodes`
 		Node* node = new Node(id, parent_id, name, value);
 		nodes.push_back(node);
 
@@ -35,17 +37,16 @@ public:
 		}
 	}
 
-	Node* findNode(int id) {
+	Node* findNode(int id) { // Метод находит узел по его идентификатору
 		for (int i = 0; i < nodes.size(); i++) {
 			if (nodes[i]->id == id) {
 				return nodes[i];
 			}
 		}
-
 		return nullptr;
 	}
 
-	void updateNode(int id, string value) {
+	void updateNode(int id, string value) { // Метод обновляет значение узла по его идентификатору
 		Node* node = findNode(id);
 		node->value = value;
 	}
@@ -53,7 +54,7 @@ public:
 
 int id_counter = 0; // счетчик идентификаторов узлов
 Tree tree;
-void parse_node(string line, int parent_id) { // функция для парсинга строки и создания узла
+void parse_node(string line, int parent_id) { // Метод для парсинга строки и создания узла
 	if (line == "} ") { // если строка равна "} "
 		for (size_t i = id_counter; i > 0; i--) {
 			if (line == "} " && tree.findNode(i)->value == "") {
@@ -72,9 +73,13 @@ void parse_node(string line, int parent_id) { // функция для парс�
 		size_t pos = line.find("="); // ищем позицию знака "="
 		string name = line.substr(0, pos); // выделяем имя узла
 		name = name.substr(0, name.size() - 1); // удаляем пробелы|знаки вокруг имени
+		regex pattern("^[a-zA-Z_][a-zA-Z0-9_]*$"); // Регулярное выражение для проверки строки
+		if (regex_match(name, pattern) == false) { // Проверяем соответствие строки регулярному выражению
+			cout << "Не верный формат строки: " << line << endl;
+			exit(1); // завершаем работу программы с кодом ошибки
+		}
 		string value = line.substr(pos + 1); // выделяем значение узла
 		value = value.substr(1, value.size() - 2); // удаляем пробелы|знаки вокруг значения
-
 		if (value.front() == '{') { // если значение узла является вертикальным списком
 			tree.addNode(++id_counter, parent_id, name, "");
 		}
@@ -90,7 +95,12 @@ void parse_node(string line, int parent_id) { // функция для парс�
 			while (line.size() != NULL) { // пока не прошли весь список
 				size_t pos = line.find("="); // ищем позицию знака "="
 				size_t end_pos = line.find('"', pos + 4); // ищем позицию знака "
-				string value = line.substr(0, end_pos + 2); // выделяем имя узла
+				string value = line.substr(0, end_pos + 2); // выделяем значение узла
+				regex pattern("^[^\n]*$");// Регулярное выражение для проверки строки
+				if (regex_match(value, pattern) == false) { // Проверяем соответствие строки регулярному выражению
+					cout << "Не верный формат строки: " << line << endl;
+					exit(1); // завершаем работу программы с кодом ошибки
+				}
 				parse_node(value, 0); // рекурсивно вызываем функцию для создания дочернего узла
 				line = line.substr(end_pos + 2, line.size() - 4); // обрезаем строку до следующего имени узла
 				counter++; // инкрементируем счетчик количества элементов в горизонтальном списке
@@ -100,7 +110,7 @@ void parse_node(string line, int parent_id) { // функция для парс�
 	}
 }
 
-void printTree(Node* node, std::ofstream& output_file, int depth = 0) { // функция для построения выходного файла
+void printTree(Node* node, ofstream& output_file, int depth = 0) { // Метод для построения выходного файла
 	for (int i = 0; i < depth; i++) {
 		output_file << " ";
 	}
@@ -119,6 +129,7 @@ void printTree(Node* node, std::ofstream& output_file, int depth = 0) { // фу�
 }
 
 int main(int argc, char* argv[]) {
+	setlocale(LC_ALL, "Russian");
 	//if (argc != 3) { // если не указаны имена входного и выходного файлов
 	//	cout << "Использование: " << argv[0] << " <input_filename> <output_filename>" << endl;
 	//	return 1; // завершаем работу программы с кодом ошибки

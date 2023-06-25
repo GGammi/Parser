@@ -7,106 +7,105 @@ using namespace std;
 
 class Node {
 public:
-    int id;
-    int parent_id;
-    string name;
-    string value;
-    std::vector<Node*> children;
+	int id;
+	int parent_id;
+	string name;
+	string value;
+	std::vector<Node*> children;
 
-    Node(int id, int parent_id, std::string name, string value) {
-        this->id = id;
-        this->parent_id = parent_id;
-        this->name = name;
-        this->value = value;
-    }
+	Node(int id, int parent_id, std::string name, string value) {
+		this->id = id;
+		this->parent_id = parent_id;
+		this->name = name;
+		this->value = value;
+	}
 };
 
 class Tree {
 public:
-    std::vector<Node*> nodes;
+	std::vector<Node*> nodes;
 
-    void addNode(int id, int parent_id, std::string name, string value) {
-        Node* node = new Node(id, parent_id, name, value);
-        nodes.push_back(node);
+	void addNode(int id, int parent_id, std::string name, string value) {
+		Node* node = new Node(id, parent_id, name, value);
+		nodes.push_back(node);
 
-        if (parent_id != 0) {
-            Node* parent = findNode(parent_id);
-            parent->children.push_back(node);
-        }
-    }
+		if (parent_id != 0) {
+			Node* parent = findNode(parent_id);
+			parent->children.push_back(node);
+		}
+	}
 
-    Node* findNode(int id) {
-        for (int i = 0; i < nodes.size(); i++) {
-            if (nodes[i]->id == id) {
-                return nodes[i];
-            }
-        }
+	Node* findNode(int id) {
+		for (int i = 0; i < nodes.size(); i++) {
+			if (nodes[i]->id == id) {
+				return nodes[i];
+			}
+		}
 
-        return nullptr;
-    }
+		return nullptr;
+	}
 
-    void updateNode(int id, string value) {
-        Node* node = findNode(id);
-        node->value = value;
-    }
+	void updateNode(int id, string value) {
+		Node* node = findNode(id);
+		node->value = value;
+	}
 };
 
 int id_counter = 0; // счетчик идентификаторов узлов
 Tree tree;
 void parse_node(string line, int parent_id) { // функция для парсинга строки и создания узла
-  if (line == "} ") { // если строка равна "} "
-    for (size_t i = id_counter; i > 0; i--) {
-      if (line == "} " && nodes->value == "") {
-        nodes[i].value = 'x'; // игнорируем узел
-        break;
-      }
-    }
-  }
-  for (size_t i = id_counter; i > 0; i--) {
-    if (nodes->value.value == "") { // если значение в узле равно ""
-      parent_id = nodes[i].id; // ищем вышестоящего родителя
-      break;
-    }
-  }
-  if (line != "} ") { // если строка не равна "} "
-    size_t pos = line.find("="); // ищем позицию знака "="
-    string name = line.substr(0, pos); // выделяем имя узла
-    name = name.substr(0, name.size() - 1); // удаляем пробелы|знаки вокруг имени
-    string value = line.substr(pos + 1); // выделяем значение узла
-    value = value.substr(1, value.size() - 2); // удаляем пробелы|знаки вокруг значения
+	if (line == "} ") { // если строка равна "} "
+		for (size_t i = id_counter; i > 0; i--) {
+			if (line == "} " && tree.findNode(i)->value == "") {
+				tree.updateNode(i, "x"); // игнорируем узел
+				break;
+			}
+		}
+	}
+	for (size_t i = id_counter; i > 0; i--) {
+		if (tree.findNode(i)->value == "") { // если значение в узле равно ""
+			parent_id = tree.findNode(i)->id; // ищем вышестоящего родителя
+			break;
+		}
+	}
+	if (line != "} ") { // если строка не равна "} "
+		size_t pos = line.find("="); // ищем позицию знака "="
+		string name = line.substr(0, pos); // выделяем имя узла
+		name = name.substr(0, name.size() - 1); // удаляем пробелы|знаки вокруг имени
+		string value = line.substr(pos + 1); // выделяем значение узла
+		value = value.substr(1, value.size() - 2); // удаляем пробелы|знаки вокруг значения
 
-    if (value.front() == '{') { // если значение узла является вертикальным списком
-      tree.addNode(++id_counter, parent_id, name, "");
-      nodes[parent_id].children_id.push_back(id_counter); // добавляем идентификатор узла в вектор
-    }
-    else if (value.front() == '"' && value.back() == '"') { // если значение узла не является списком
-      value = value.substr(1, value.size() - 2); // удаляем пробелы|знаки вокруг значения
-      nodes[parent_id].children_id.push_back(id_counter); // добавляем идентификатор узла в вектор
-    }
-    int counter = 0; // создаем|обнуляем счетчик количества элементов в горизонтальном списке
-    if (value.front() == '{' && value.back() == '}') { // если значение узла является списком
-      value = value.substr(2, value.size() - 3); // удаляем скобки вокруг списка
-      string line = value; // создаем временную строку
-      size_t start_pos = 0; // начальная позиция для поиска дочерних узлов
-      while (line.size() != NULL) { // пока не прошли весь список
-        size_t pos = line.find("="); // ищем позицию знака "="
-        size_t end_pos = line.find('"', pos + 4); // ищем позицию знака "
-        string value = line.substr(0, end_pos + 2); // выделяем имя узла
-        parse_node(value, 0); // рекурсивно вызываем функцию для создания дочернего узла
-        line = line.substr(end_pos + 2, line.size() - 4); // обрезаем строку до следующего имени узла
-        counter++; // инкрементируем счетчик количества элементов в горизонтальном списке
-      }
-      tree.updateNode(id_counter - counter, "x"); // игнорируем узел
-    }
-  }
+		if (value.front() == '{') { // если значение узла является вертикальным списком
+			tree.addNode(++id_counter, parent_id, name, "");
+		}
+		else if (value.front() == '"' && value.back() == '"') { // если значение узла не является списком
+			value = value.substr(1, value.size() - 2); // удаляем пробелы|знаки вокруг значения
+			tree.addNode(++id_counter, parent_id, name, value);
+		}
+		int counter = 0; // создаем|обнуляем счетчик количества элементов в горизонтальном списке
+		if (value.front() == '{' && value.back() == '}') { // если значение узла является списком
+			value = value.substr(2, value.size() - 3); // удаляем скобки вокруг списка
+			string line = value; // создаем временную строку
+			size_t start_pos = 0; // начальная позиция для поиска дочерних узлов
+			while (line.size() != NULL) { // пока не прошли весь список
+				size_t pos = line.find("="); // ищем позицию знака "="
+				size_t end_pos = line.find('"', pos + 4); // ищем позицию знака "
+				string value = line.substr(0, end_pos + 2); // выделяем имя узла
+				parse_node(value, 0); // рекурсивно вызываем функцию для создания дочернего узла
+				line = line.substr(end_pos + 2, line.size() - 4); // обрезаем строку до следующего имени узла
+				counter++; // инкрементируем счетчик количества элементов в горизонтальном списке
+			}
+			tree.updateNode(id_counter - counter, "x"); // игнорируем узел
+		}
+	}
 }
 
 void printTree(Node* node, std::ofstream& output_file, int depth = 0) { // функция для построения выходного файла
-    for (int i = 0; i < depth; i++) {
-        output_file << " ";
-    }
+	for (int i = 0; i < depth; i++) {
+		output_file << " ";
+	}
 	if (node->value == "" || node->value == "x") { // если узел является списком
-        string str; // временная строка
+		string str; // временная строка
 		for (size_t i = 0; i < node->children.size(); i++)
 			str += to_string(node->children[i]->id) + " "; // собираем вектор в строку
 		output_file << node->id << ", " << node->parent_id << ", " << node->name << ", " << str << endl; // выводим узел в файл с списком
@@ -114,9 +113,9 @@ void printTree(Node* node, std::ofstream& output_file, int depth = 0) { // фу�
 	else { // иначе если узел не является списком
 		output_file << node->id << ", " << node->parent_id << ", " << node->name << ", " << node->value << endl; // выводим узел в файл с строкой
 	}
-    for (int i = 0; i < node->children.size(); i++) {
-        printTree(node->children[i], output_file, depth + 1);
-    }
+	for (int i = 0; i < node->children.size(); i++) {
+		printTree(node->children[i], output_file, depth + 1);
+	}
 }
 
 int main(int argc, char* argv[]) {
@@ -139,7 +138,7 @@ int main(int argc, char* argv[]) {
 	//	cout << "Не удалось создать файл \"" << argv[2] << "\"" << endl;
 	//	return 1; // завершаем работу программы с кодом ошибки
 	//}
-    printTree(tree.findNode(1), output_file);
+	printTree(tree.findNode(1), output_file);
 	output_file.close(); // закрываем выходной файл
 	return 0; // завершаем работу программы
 }
